@@ -10,10 +10,27 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
+
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly httpService: HttpService,
+  ) {}
 
+  // 🔹 REPORTS (STATIC ROUTE — MUST COME FIRST)
+  @Get('reports')
+  async getReports() {
+    const axiosResponse = await firstValueFrom(
+      this.httpService.get('http://localhost:3001/reports/users'),
+    );
+
+    return axiosResponse.data;
+  }
+
+  // 🔹 USER CRUD
   @Post()
   createUser(@Body() body: CreateUserDto) {
     return this.usersService.create(body);

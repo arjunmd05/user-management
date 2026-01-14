@@ -2,23 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { NotificationsService } from '../notifications/notifications.service';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
-    private readonly notificationsService: NotificationsService,
+    private readonly userRepository: Repository<User>,
+    private readonly httpService: HttpService,
   ) {}
 
   async create(userData: Partial<User>) {
     const user = await this.userRepository.save(userData);
 
-    this.notificationsService.notifyUserCreated({
-      id: user.id,
-      email: user.email,
-    });
+    await firstValueFrom(
+      this.httpService.post('http://localhost:3002/notifications', {
+        event: 'USER_CREATED',
+        userId: user.id,
+        email: user.email,
+      }),
+    );
 
     return user;
   }
@@ -37,11 +41,5 @@ export class UsersService {
 
   remove(id: number) {
     return this.userRepository.delete(id);
-  }
-
-  async findAllForReports() {
-    return this.userRepository.find({
-      select: ['id', 'name', 'email'],
-    });
   }
 }
