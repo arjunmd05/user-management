@@ -20,7 +20,6 @@ export class UsersController {
     private readonly httpService: HttpService,
   ) {}
 
-  // 🔹 REPORTS (STATIC ROUTE — MUST COME FIRST)
   @Get('reports')
   async getReports() {
     const axiosResponse = await firstValueFrom(
@@ -30,7 +29,6 @@ export class UsersController {
     return axiosResponse.data;
   }
 
-  // 🔹 USER CRUD
   @Post()
   createUser(@Body() body: CreateUserDto) {
     return this.usersService.create(body);
